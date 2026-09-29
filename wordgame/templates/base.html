@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{% endblock %} | Guess the word</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  <header class="topbar">
+    <a class="brand" href="{{ url_for('game.index') }}" aria-label="Guess the word, home">
+      <span class="brand-mark" aria-hidden="true"><i class="s-correct">G</i><i class="s-present">T</i><i class="s-absent">W</i></span>
+      <span class="brand-name">Guess the word</span>
+    </a>
+
+    {% if g.user %}
+      <nav class="nav" aria-label="Main">
+        {% if g.user.role == 'admin' %}
+          <a href="{{ url_for('admin.daily_report') }}" {% if request.endpoint == 'admin.daily_report' %}aria-current="page"{% endif %}>Daily report</a>
+          <a href="{{ url_for('admin.players') }}" {% if request.endpoint in ('admin.players', 'admin.player_report') %}aria-current="page"{% endif %}>Players</a>
+          <a href="{{ url_for('admin.words') }}" {% if request.endpoint == 'admin.words' %}aria-current="page"{% endif %}>Word list</a>
+        {% else %}
+          <a href="{{ url_for('game.dashboard') }}" {% if request.endpoint in ('game.dashboard', 'game.board') %}aria-current="page"{% endif %}>Play</a>
+        {% endif %}
+      </nav>
+      <div class="account">
+        <span class="who">{{ g.user.username }}{% if g.user.role == 'admin' %} <span class="role">admin</span>{% endif %}</span>
+        <form method="post" action="{{ url_for('auth.logout') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="link-button" type="submit">Log out</button>
+        </form>
+      </div>
+    {% endif %}
+  </header>
+
+  <main class="page {% block page_class %}{% endblock %}">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flashes" role="status">
+          {% for category, message in messages %}
+            <p class="flash flash-{{ category }}">{{ message }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

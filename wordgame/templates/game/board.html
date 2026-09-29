@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Word {{ word_number }}{% endblock %}
+{% block page_class %}page-game{% endblock %}
+{% block content %}
+{% set keyboard = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'] %}
+<section class="game"
+         data-game
+         data-endpoint="{{ url_for('game.submit_guess', game_id=game.id) }}"
+         data-home="{{ url_for('game.dashboard') }}"
+         data-csrf="{{ csrf_token() }}"
+         data-status="{{ game.status }}"
+         data-attempts="{{ rows|length }}"
+         data-max-guesses="{{ max_guesses }}">
+
+  <header class="game-head">
+    <h1>Word {{ word_number }} of {{ limit }}</h1>
+    <p class="sub" data-counter>
+      {% if game.status == 'in_progress' %}
+        {{ max_guesses - rows|length }} {{ 'guess' if max_guesses - rows|length == 1 else 'guesses' }} left
+      {% elif game.status == 'won' %}
+        Solved in {{ rows|length }}
+      {% else %}
+        Not solved. The word was {{ answer }}.
+      {% endif %}
+    </p>
+  </header>
+
+  <div class="board" role="grid" aria-label="Your guesses">
+    {% for r in range(max_guesses) %}
+      {% set row = rows[r] if r < rows|length else None %}
+      <div class="row" role="row" aria-label="Guess {{ r + 1 }}">
+        {% for c in range(5) %}
+          {% if row %}
+            <span class="tile" role="gridcell" data-state="{{ row.result[c] }}" aria-label="{{ row.guess[c] }}, {{ {'correct': 'right spot', 'present': 'wrong spot', 'absent': 'not in word'}[row.result[c]] }}">{{ row.guess[c] }}</span>
+          {% else %}
+            <span class="tile" role="gridcell"></span>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+
+  <p class="toast" data-toast aria-live="assertive"></p>
+
+  {% if game.status == 'in_progress' %}
+    <div class="keyboard" aria-label="Keyboard">
+      {% for line in keyboard %}
+        <div class="keys">
+          {% if loop.last %}<button class="key key-wide" type="button" data-action="enter">Enter</button>{% endif %}
+          {% for ch in line %}<button class="key" type="button" data-key="{{ ch }}">{{ ch }}</button>{% endfor %}
+          {% if loop.last %}<button class="key key-wide" type="button" data-action="back" aria-label="Delete letter">Delete</button>{% endif %}
+        </div>
+      {% endfor %}
+    </div>
+    <p class="hint">Type on your keyboard or tap the keys. Letters are entered in capitals.</p>
+  {% else %}
+    <div class="finished-actions">
+      <a class="btn btn-primary" href="{{ url_for('game.dashboard') }}">Back to today's words</a>
+    </div>
+  {% endif %}
+
+  <dialog class="result" data-result aria-labelledby="result-title">
+    <div class="result-body">
+      <div class="result-word" data-result-word aria-hidden="true"></div>
+      <h2 id="result-title" data-result-title></h2>
+      <p data-result-text></p>
+      <button class="btn btn-primary btn-wide" type="button" data-result-ok>OK</button>
+    </div>
+  </dialog>
+</section>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='game.js') }}" defer></script>{% endblock %}

@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Daily report{% endblock %}
+{% block content %}
+<div class="report-layout">
+  <section class="report-main">
+    <form class="day-picker" method="get" action="{{ url_for('admin.daily_report') }}">
+      <a class="btn btn-quiet" href="{{ url_for('admin.daily_report', day=prev_day) }}" aria-label="Previous day">Previous</a>
+      <label class="visually-hidden" for="day">Report date</label>
+      <input id="day" type="date" name="day" value="{{ day }}" onchange="this.form.submit()">
+      {% if not is_today %}
+        <a class="btn btn-quiet" href="{{ url_for('admin.daily_report', day=next_day) }}" aria-label="Next day">Next</a>
+        <a class="link" href="{{ url_for('admin.daily_report') }}">Today</a>
+      {% endif %}
+      <noscript><button class="btn btn-quiet" type="submit">Show</button></noscript>
+    </form>
+
+    <h1 class="report-date">{{ day_label }}</h1>
+
+    {% if totals.words_tried %}
+      <p class="headline">
+        <strong>{{ totals.players }}</strong> {{ 'player' if totals.players == 1 else 'players' }}
+        tried <strong>{{ totals.words_tried }}</strong> {{ 'word' if totals.words_tried == 1 else 'words' }}
+        and guessed <strong>{{ totals.correct }}</strong> correctly.
+      </p>
+
+      <table class="table">
+        <caption class="visually-hidden">Results by player for {{ day }}</caption>
+        <thead>
+          <tr>
+            <th scope="col">Player</th>
+            <th scope="col" class="num">Words tried</th>
+            <th scope="col" class="num">Correct guesses</th>
+            <th scope="col" class="num">Unfinished</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in by_player %}
+            <tr>
+              <td><a class="link" href="{{ url_for('admin.player_report', user_id=row.id) }}">{{ row.username }}</a></td>
+              <td class="num">{{ row.words_tried }}</td>
+              <td class="num">{{ row.correct }}</td>
+              <td class="num">{{ row.unfinished or '' }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="headline headline-empty">Nobody played on this day.</p>
+      <p class="sub">Pick another date above, or check a day from the list.</p>
+    {% endif %}
+  </section>
+
+  <aside class="report-side">
+    <h2>Days with games</h2>
+    {% if recent_days %}
+      <ul class="day-list">
+        {% for d in recent_days %}
+          <li>
+            <a href="{{ url_for('admin.daily_report', day=d.played_on) }}" {% if d.played_on == day %}aria-current="date"{% endif %}>
+              <span>{{ d.played_on }}</span>
+              <span class="day-meta">{{ d.players }} {{ 'player' if d.players == 1 else 'players' }}, {{ d.correct }} correct</span>
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="sub">No games yet. Once players start, their days show up here.</p>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

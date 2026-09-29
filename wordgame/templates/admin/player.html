@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}{{ player.username }}{% endblock %}
+{% block content %}
+<p class="crumb"><a class="link" href="{{ url_for('admin.players') }}">All players</a></p>
+<header class="section-head">
+  <h1>{{ player.username }}</h1>
+  {% if total_tried %}
+    <p class="headline">
+      Guessed <strong>{{ total_correct }}</strong> of <strong>{{ total_tried }}</strong> {{ 'word' if total_tried == 1 else 'words' }}
+      across {{ days|length }} {{ 'day' if days|length == 1 else 'days' }}.
+    </p>
+  {% else %}
+    <p class="headline headline-empty">Hasn't played yet.</p>
+  {% endif %}
+</header>
+
+{% if days %}
+<section>
+  <h2>By date</h2>
+  <table class="table">
+    <thead><tr><th scope="col">Date</th><th scope="col" class="num">Words tried</th><th scope="col" class="num">Correct guesses</th></tr></thead>
+    <tbody>
+      {% for d in days %}
+        <tr>
+          <td><a class="link" href="{{ url_for('admin.daily_report', day=d.played_on) }}">{{ d.played_on }}</a></td>
+          <td class="num">{{ d.words_tried }}</td>
+          <td class="num">{{ d.correct }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Every word given</h2>
+  <table class="table">
+    <thead><tr><th scope="col">Date</th><th scope="col">Word</th><th scope="col">Guesses, in order</th><th scope="col">Result</th></tr></thead>
+    <tbody>
+      {% for gm in games %}
+        <tr>
+          <td>{{ gm.played_on }}</td>
+          <td class="mono-word">{{ gm.word }}</td>
+          <td class="mono-word guesses-cell">{{ gm.guesses or 'None yet' }}</td>
+          <td><span class="pill pill-{{ gm.status }}">{{ {'won': 'Guessed', 'lost': 'Missed', 'in_progress': 'Playing'}[gm.status] }}</span></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+{% endblock %}

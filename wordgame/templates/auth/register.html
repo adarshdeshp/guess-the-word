@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Create an account{% endblock %}
+{% block page_class %}page-auth{% endblock %}
+{% block content %}
+<div class="auth-layout">
+  {% include "_demo_board.html" %}
+
+  <section class="auth-panel">
+    <h1>Create an account</h1>
+    <p class="sub">You'll be signed in right after.</p>
+
+    <form method="post" class="form" novalidate data-register>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <label class="field {% if errors.username %}has-error{% endif %}">
+        <span>Username</span>
+        <input name="username" value="{{ username }}" autocomplete="username" autocapitalize="off" spellcheck="false"
+               required aria-describedby="username-rules" autofocus>
+      </label>
+      <ul class="rules" id="username-rules" data-rules-for="username">
+        <li data-rule="letters">Letters only</li>
+        <li data-rule="length5">At least 5 letters</li>
+        <li data-rule="mixed">Upper and lower case</li>
+      </ul>
+      {% for msg in errors.username or [] %}<p class="field-error">{{ msg }}</p>{% endfor %}
+
+      <label class="field {% if errors.password %}has-error{% endif %}">
+        <span>Password</span>
+        <input name="password" type="password" autocomplete="new-password" required aria-describedby="password-rules">
+      </label>
+      <ul class="rules" id="password-rules" data-rules-for="password">
+        <li data-rule="length5">At least 5 characters</li>
+        <li data-rule="alpha">A letter</li>
+        <li data-rule="digit">A number</li>
+        <li data-rule="special">One of $ % * @</li>
+      </ul>
+      {% for msg in errors.password or [] %}<p class="field-error">{{ msg }}</p>{% endfor %}
+
+      <button class="btn btn-primary btn-wide" type="submit">Create account</button>
+    </form>
+
+    <p class="switch">Already have an account? <a href="{{ url_for('auth.login') }}">Log in</a></p>
+  </section>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='register.js') }}" defer></script>{% endblock %}

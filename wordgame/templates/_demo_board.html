@@ -1,0 +1,28 @@
+{# The example board from the brief, shown beside the login and signup forms. #}
+{% set demo = [
+  ('AUDIO', 'aaaap'),
+  ('HOMER', 'acacc'),
+  ('JOKER', 'acacc'),
+  ('TONER', 'ccacc'),
+  ('TOWER', 'ccccc'),
+] %}
+{% set states = {'c': 'correct', 'p': 'present', 'a': 'absent'} %}
+<figure class="showcase" aria-label="Example game: five guesses ending in TOWER">
+  <div class="board board-demo">
+    {% for word, marks in demo %}
+      <div class="row" style="--row: {{ loop.index0 }}">
+        {% for i in range(5) %}
+          <span class="tile" data-state="{{ states[marks[i]] }}" style="--col: {{ i }}">{{ word[i] }}</span>
+        {% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+  <figcaption>
+    <p class="showcase-lead">Five tries to find a five-letter word.</p>
+    <ul class="legend">
+      <li><span class="swatch" data-state="correct"></span>Green: right letter, right spot</li>
+      <li><span class="swatch" data-state="present"></span>Orange: in the word, wrong spot</li>
+      <li><span class="swatch" data-state="absent"></span>Grey: not in the word</li>
+    </ul>
+  </figcaption>
+</figure>

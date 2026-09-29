@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Play{% endblock %}
+{% block content %}
+<section class="today">
+  <header class="today-head">
+    <h1>Today's words</h1>
+    <p class="sub">{{ todays|length }} of {{ limit }} played. Each word gives you {{ max_guesses }} guesses.</p>
+  </header>
+
+  <ol class="slots">
+    {% for game in todays %}
+      <li class="slot slot-{{ game.status }}">
+        {% if game.status == 'in_progress' %}
+          <div class="slot-tiles" aria-hidden="true">{% for _ in range(5) %}<span class="tile tile-sm"></span>{% endfor %}</div>
+          <p class="slot-text">In progress, {{ game.tries }} of {{ max_guesses }} guesses used</p>
+        {% else %}
+          <div class="slot-tiles" aria-label="{{ game.word }}">
+            {% for ch in game.word %}<span class="tile tile-sm" data-state="{{ 'correct' if game.status == 'won' else 'absent' }}">{{ ch }}</span>{% endfor %}
+          </div>
+          <p class="slot-text">
+            {% if game.status == 'won' %}Solved in {{ game.tries }} {{ 'guess' if game.tries == 1 else 'guesses' }}{% else %}Not solved{% endif %}
+          </p>
+        {% endif %}
+      </li>
+    {% endfor %}
+    {% for _ in range(remaining) %}
+      <li class="slot slot-empty">
+        <div class="slot-tiles" aria-hidden="true">{% for _ in range(5) %}<span class="tile tile-sm tile-ghost"></span>{% endfor %}</div>
+        <p class="slot-text">Not played yet</p>
+      </li>
+    {% endfor %}
+  </ol>
+
+  <div class="today-action">
+    {% if open_game %}
+      <a class="btn btn-primary" href="{{ url_for('game.board', game_id=open_game.id) }}">Continue your word</a>
+    {% elif remaining %}
+      <form method="post" action="{{ url_for('game.start') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-primary" type="submit">Start word {{ todays|length + 1 }} of {{ limit }}</button>
+      </form>
+    {% else %}
+      <p class="done-note">That's all three for today. New words unlock tomorrow.</p>
+    {% endif %}
+  </div>
+</section>
+
+{% if history %}
+<section class="history">
+  <h2>Earlier days</h2>
+  <table class="table">
+    <thead><tr><th scope="col">Date</th><th scope="col" class="num">Words tried</th><th scope="col" class="num">Guessed</th></tr></thead>
+    <tbody>
+      {% for day in history %}
+        <tr><td>{{ day.played_on }}</td><td class="num">{{ day.words_tried }}</td><td class="num">{{ day.correct }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+{% endblock %}

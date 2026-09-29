@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Word list{% endblock %}
+{% block content %}
+<header class="section-head">
+  <h1>Word list</h1>
+  <p class="sub">{{ words|length }} words. Players get one at random, preferring words they haven't seen.</p>
+</header>
+
+<form method="post" class="add-word" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label class="field">
+    <span>New word</span>
+    <input name="word" value="{{ draft }}" maxlength="5" autocomplete="off" spellcheck="false" class="input-word" required>
+  </label>
+  <button class="btn btn-primary" type="submit">Add word</button>
+</form>
+{% if error %}<p class="form-error" role="alert">{{ error }}</p>{% endif %}
+
+<ul class="word-grid">
+  {% for w in words %}
+    <li class="word-item">
+      <span class="word-tiles" aria-label="{{ w.word }}">{% for ch in w.word %}<span class="tile tile-xs">{{ ch }}</span>{% endfor %}</span>
+      <span class="word-meta">{% if w.times_given %}Given {{ w.times_given }}×{% else %}Not given yet{% endif %}</span>
+      {% if not w.times_given %}
+        <form method="post" action="{{ url_for('admin.delete_word', word_id=w.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="link-button link-danger" type="submit" aria-label="Remove {{ w.word }}">Remove</button>
+        </form>
+      {% endif %}
+    </li>
+  {% endfor %}
+</ul>
+{% endblock %}
